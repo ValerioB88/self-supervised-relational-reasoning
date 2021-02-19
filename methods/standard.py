@@ -20,7 +20,7 @@ import torchvision.transforms as transforms
 import tqdm
 import numpy as np
 from utils import AverageMeter
-
+import neptune
 class StandardModel(torch.nn.Module):
     def __init__(self, feature_extractor, num_classes, tot_epochs=200):
         super(StandardModel, self).__init__()
@@ -35,7 +35,10 @@ class StandardModel(torch.nn.Module):
         self.optimizer_lineval = Adam([{"params": self.classifier.parameters(), "lr": 0.001}])
         self.optimizer_finetune = Adam([{"params": self.feature_extractor.parameters(), "lr": 0.001, "weight_decay": 1e-5},
                                         {"params": self.classifier.parameters(), "lr": 0.0001, "weight_decay": 1e-5}])
-                                        
+
+        neptune.init(f'valeriobiscione/NovelObjRecogn')
+        neptune.create_experiment(tags=['viewpoint-inv'])
+
     def forward(self, x, detach=False):    
         if(detach): out = self.feature_extractor(x).detach()
         else: out = self.feature_extractor(x)
@@ -64,6 +67,9 @@ class StandardModel(torch.nn.Module):
             correct = pred.eq(target.view_as(pred)).cpu().sum()
             accuracy = (100.0 * correct / float(len(target))) 
             accuracy_meter.update(accuracy.item(), len(target))
+            if i % 20 == 0:
+                neptune.send_metric("accuracy", accuracy)
+
         elapsed_time = time.time() - start_time
         print("Epoch [" + str(epoch) + "]"
                 + "[" + str(time.strftime("%H:%M:%S", time.gmtime(elapsed_time))) + "]"

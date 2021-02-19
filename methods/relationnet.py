@@ -20,7 +20,8 @@ from torch.optim import SGD, Adam
 import torch.nn.functional as F
 import torchvision.datasets as dset
 import torchvision.transforms as transforms
-from utils import AverageMeter
+from utils import AverageMetern
+import neptune
 
 class FocalLoss(torch.nn.Module):
   """Sigmoid focal cross entropy loss.
