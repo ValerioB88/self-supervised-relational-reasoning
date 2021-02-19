@@ -295,7 +295,7 @@ class DataManager():
         elif(method=="deepinfomax"):
             train_transform = transforms.Compose([transforms.RandomHorizontalFlip(), transforms.ToTensor(), normalize])
         elif(method=="standard" or method=="rotationnet" or method=="deepcluster"):
-            train_transform = transforms.Compose([transforms.RandomCrop(side, padding=padding), 
+            train_transform = transforms.Compose([transforms.RandomCrop(side, padding=padding),
                                                   transforms.RandomHorizontalFlip(),
                                                   transforms.ToTensor(), normalize])
         elif(method=="finetune"):
@@ -378,7 +378,7 @@ class DataManager():
 
     def get_test_loader(self, dataset, data_size, num_workers=8):
         self._check(dataset)        
-        if(dataset=="cifar10"): 
+        if(dataset=="cifar10"):
             normalize = transforms.Normalize(mean=[0.491, 0.482, 0.447], std=[0.247, 0.243, 0.262])
             test_transform = transforms.Compose([transforms.ToTensor(), normalize])
             test_set = dset.CIFAR10("data", train=False, transform=test_transform, download=True)

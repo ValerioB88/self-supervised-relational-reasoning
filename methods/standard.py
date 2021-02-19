@@ -36,7 +36,7 @@ class StandardModel(torch.nn.Module):
         self.optimizer_finetune = Adam([{"params": self.feature_extractor.parameters(), "lr": 0.001, "weight_decay": 1e-5},
                                         {"params": self.classifier.parameters(), "lr": 0.0001, "weight_decay": 1e-5}])
 
-        neptune.init(f'valeriobiscione/NovelObjRecogn')
+        neptune.init(f'valeriobiscione/TestProject')
         neptune.create_experiment(tags=['viewpoint-inv'])
 
     def forward(self, x, detach=False):    
@@ -49,12 +49,15 @@ class StandardModel(torch.nn.Module):
         start_time = time.time()
         self.feature_extractor.train()
         self.classifier.train()
+        start = time.time()
         if(epoch==int(self.tot_epochs*0.5) or epoch==int(self.tot_epochs*0.75)):
             for i_g, g in enumerate(self.optimizer.param_groups):
                 g["lr"] *= 0.1 #divide by 10
                 print("Group[" + str(i_g) + "] learning rate: " + str(g["lr"]))
         loss_meter = AverageMeter()
         accuracy_meter = AverageMeter()
+        print(torch.rand(1))
+
         for i, (data, target) in enumerate(train_loader):
             if torch.cuda.is_available(): data, target = data.cuda(), target.cuda()
             self.optimizer.zero_grad()
@@ -67,8 +70,11 @@ class StandardModel(torch.nn.Module):
             correct = pred.eq(target.view_as(pred)).cpu().sum()
             accuracy = (100.0 * correct / float(len(target))) 
             accuracy_meter.update(accuracy.item(), len(target))
-            if i % 20 == 0:
+            if i % 5 == 0:
                 neptune.send_metric("accuracy", accuracy)
+            if i % 100 == 0:
+                print(f"time elapsed 100 iter: {time.time()-start}")
+                start = time.time()
 
         elapsed_time = time.time() - start_time
         print("Epoch [" + str(epoch) + "]"
@@ -125,7 +131,7 @@ class StandardModel(torch.nn.Module):
             minibatch_iter.set_postfix({"loss": loss_meter.avg, "acc": accuracy_meter.avg})
         return loss_meter.avg, accuracy_meter.avg
         
-    def test(self, test_loader):
+    def  test(self, test_loader):
         self.feature_extractor.eval()
         self.classifier.eval()
         loss_meter = AverageMeter()
